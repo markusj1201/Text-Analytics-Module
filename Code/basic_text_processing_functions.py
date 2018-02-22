@@ -13,7 +13,13 @@ from matplotlib import pyplot as plt
 from sklearn.manifold import TSNE
 from string import punctuation
 punctuation = unicode(punctuation)+u'1234567890'
-nlp = spacy.load('en')
+try:
+    nlp = spacy.load('en')
+    STOP_WORDS = spacy.en.language_data.STOP_WORDS
+except:
+    import en_core_web_sm
+    nlp = en_core_web_sm.load()
+    STOP_WORDS = nlp.Defaults.stop_words
 def _try_iter_(iterable, ind, errval=None):
     try:
         return iterable[ind]
@@ -53,7 +59,7 @@ def punct_space(token):
 
     return token.is_punct or token.is_space
 
-def stopword_remove(token, sw=spacy.en.language_data.STOP_WORDS):
+def stopword_remove(token, sw=STOP_WORDS):
     if sw != False:
         return token.lemma_ not in sw
     else:
@@ -97,7 +103,7 @@ def sub_entity(token, sublist=True, lemmatize=True):
 
 ### Sentence processing
 ### File must must be in one document per line format
-def lemmatized_sentence_corpus(filename, entity_sub = entity_sub, lemmatize= True, batch_size = batch_size, n_threads = n_threads, sw = spacy.en.language_data.STOP_WORDS):
+def lemmatized_sentence_corpus(filename, entity_sub = entity_sub, lemmatize= True, batch_size = batch_size, n_threads = n_threads, sw = STOP_WORDS):
     """
     generator function to use spaCy to parse reviews,
     lemmatize the text, and yield sentences
@@ -123,7 +129,7 @@ def lemmatized_sentence_corpus(filename, entity_sub = entity_sub, lemmatize= Tru
                 yield u' '.join(list(chain(*[_remove_punc_(sub_entity(token, sublist=entity_sub, lemmatize=lemmatize)).split() for token in sent
                                  if (not punct_space(token))&(stopword_remove(token, sw = sw))])))
 
-def _write_unigram_(txt_filepath, unigram_sentences_filepath=fpathroot+fpathappend+'_sent_gram_0.txt', args='default', entity_sub=entity_sub, keywordlist = False, sw = spacy.en.language_data.STOP_WORDS):
+def _write_unigram_(txt_filepath, unigram_sentences_filepath=fpathroot+fpathappend+'_sent_gram_0.txt', args='default', entity_sub=entity_sub, keywordlist = False, sw = STOP_WORDS):
     """
     Creates a unigram, parsed version of texts at the sentence level.
     """
@@ -217,7 +223,7 @@ def lemmatized_review(parsed_txt, entity_sub = entity_sub, lemmatize= True, keyw
         return list(chain(*out))
 
 
-def _phrase_prediction_(fpath, grams, outfpath = None, entity_sub = entity_sub, lemmatize=True, stopwords=spacy.en.language_data.STOP_WORDS, keywordlist=False):
+def _phrase_prediction_(fpath, grams, outfpath = None, entity_sub = entity_sub, lemmatize=True, stopwords=STOP_WORDS, keywordlist=False):
     """
     This function takes an input fpath and phrase model list (either model or path)
     for documents and outputs a lemmatized, phrased, and stopword removed version
@@ -406,7 +412,7 @@ def word_algebra(w2v, add=[], subtract=[], topn=1):
     answers = w2v.most_similar(positive=add, negative=subtract, topn=topn)
     for term, similarity in answers:
         print term
-def word2vec_tsne_vis(word_vectors,fpath=fpathroot+fpathappend, dims=[800,800],colors='blue',topn = 5000,stopwords=spacy.en.language_data.STOP_WORDS):
+def word2vec_tsne_vis(word_vectors,fpath=fpathroot+fpathappend, dims=[800,800],colors='blue',topn = 5000,stopwords=STOP_WORDS):
     """
     Takes word_vectors dataframe (output from _word2vec_dataframe_)
     and outputs tsne representation of w2v terms in 2D.
