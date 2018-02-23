@@ -356,6 +356,7 @@ def ldavis_create(lda, corpus, gensim_dict,LDAvis_data_filepath=fpathroot+fpatha
 
 def _word2vec_train_(corpus, sent_fpath,returnw2v = True,size=100,window=5,epochs = 12, min_count=20,sg=1,workers=n_threads, args =None):
     """
+    Have not finished yet
     This function trains word2vec model on sentence corpus.
     By default, the model is returned.
     """
@@ -414,6 +415,7 @@ def word_algebra(w2v, add=[], subtract=[], topn=1):
         print term
 def word2vec_tsne_vis(word_vectors,fpath=fpathroot+fpathappend, dims=[800,800],colors='blue',topn = 5000,stopwords=STOP_WORDS):
     """
+    Have not finished yet
     Takes word_vectors dataframe (output from _word2vec_dataframe_)
     and outputs tsne representation of w2v terms in 2D.
     """
@@ -423,8 +425,8 @@ def word2vec_tsne_vis(word_vectors,fpath=fpathroot+fpathappend, dims=[800,800],c
     tsne_input = tsne_input.head(topn)
     tsne = TSNE()
     tsne_vectors = tsne.fit_transform(tsne_input.values)
-    tsne_filepath = fpath+'_tsne_model'
-    tsne_vectors_filepath = fpath+'tsne_vectors.npy'
+    tsne_filepath = fpathroot+fpathappend+'_tsne_model'
+    tsne_vectors_filepath = fpathroot+fpathappend+'tsne_vectors.npy'
     with open(tsne_filepath, 'w') as f:
         pickle.dump(tsne, f)
     pd.np.save(tsne_vectors_filepath, tsne_vectors)
