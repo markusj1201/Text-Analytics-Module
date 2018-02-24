@@ -257,6 +257,41 @@ def _phrase_prediction_(fpath, grams, outfpath = None, entity_sub = entity_sub, 
             txt_gram = u' '.join(txt_gram)
             f.write(txt_gram + u'\n')
     return outfpath
+def _phrase_prediction_inmemory_(texts, grams, entity_sub = entity_sub, lemmatize=True, stopwords=STOP_WORDS, keywordlist=False):
+    """
+    This function takes an input list of texts and phrase model list (either model or path)
+    for documents and outputs a lemmatized, phrased, and stopword removed version
+    of the original documents.
+
+    Returns output as list.
+    """
+    if type(grams) == list:
+        if type(grams[0]) == str:
+            load = True
+        else:
+            load = False
+    else:
+        if type(grams) == str:
+            load = True
+        else:
+            load = False
+        grams = [grams]
+
+    output = list()
+
+    for parsed_txt in nlp.pipe(texts,
+                                  batch_size=batch_size, n_threads=n_threads):
+        txt_gram = lemmatized_review(parsed_txt, entity_sub=entity_sub, lemmatize=lemmatize, keywordlist=keywordlist)
+        for gram in grams:
+            txt_gram = gram[txt_gram]
+        # remove any remaining stopwords
+        txt_gram = [term for term in txt_gram
+                          if term not in stopwords]
+        # write the transformed review as a line in the new file
+        txt_gram = u' '.join(txt_gram)
+        output.append(txt_gram)
+#         f.write(txt_gram + u'\n')
+    return output
 
 #### Functions for LDA ####
 def _make_dict_(fpath, topfilter = 95,bottomfilter =15,no_filters=True ,keep_ent=False,keep_list = {}, discard_list={},floc = fpathroot+fpathappend+'dict_gram.dict'):
