@@ -13,13 +13,16 @@ from matplotlib import pyplot as plt
 from sklearn.manifold import TSNE
 from string import punctuation
 punctuation = unicode(punctuation)+u'1234567890'
-try:
-    nlp = spacy.load('en')
-    STOP_WORDS = spacy.en.language_data.STOP_WORDS
-except:
-    import en_core_web_sm
-    nlp = en_core_web_sm.load()
-    STOP_WORDS = nlp.Defaults.stop_words
+# try:
+nlp = spacy.load('en')
+STOP_WORDS = {}
+# from spacy.lang.en.stop_words import STOP_WORDS
+#
+# STOP_WORDS = spacy.en.language_data.STOP_WORDS
+# except:
+#     import en_core_web_sm
+#     nlp = en_core_web_sm.load()
+#     STOP_WORDS = nlp.Defaults.stop_words
 def _try_iter_(iterable, ind, errval=None):
     try:
         return iterable[ind]
@@ -257,13 +260,14 @@ def _phrase_prediction_(fpath, grams, outfpath = None, entity_sub = entity_sub, 
             txt_gram = u' '.join(txt_gram)
             f.write(txt_gram + u'\n')
     return outfpath
+
 def _phrase_prediction_inmemory_(texts, grams, entity_sub = entity_sub, lemmatize=True, stopwords=STOP_WORDS, keywordlist=False):
     """
-    This function takes an input list of texts and phrase model list (either model or path)
+    This function takes an input fpath and phrase model list (either model or path)
     for documents and outputs a lemmatized, phrased, and stopword removed version
     of the original documents.
 
-    Returns output as list.
+    Returns output file path.
     """
     if type(grams) == list:
         if type(grams[0]) == str:
@@ -308,9 +312,13 @@ def _make_dict_(fpath, topfilter = 95,bottomfilter =15,no_filters=True ,keep_ent
     if no_filters == True:
         dicts = dict([it for it in cts.items() if (it[1]>bottomfilter)&(it[1]<topfilter)])
     elif keep_ent == True: # This is optional/useless if entities were not converted
-        dicts = dict([it for it in cts.items() if (((it[1]>bottomfilter)&(it[1]<topfilter))|((('_' in it[0])|(len(re.findall('[A-Z]+',it[0]))>0))|(it[0] in keep_list)))&(it[0] not in discard_list)])
+        # dicts = dict([it for it in cts.items() if (((it[1]>bottomfilter)&(it[1]<topfilter))|((('_' in it[0])|(len(re.findall('[A-Z]+',it[0]))>0))|(it[0] in keep_list)))&(it[0] not in discard_list)])
+        dicts = dict([it for it in cts.items() if (((it[1]>bottomfilter)&(it[1]<topfilter))|((len(re.findall('[A-Z]+',it[0]))>0)|(it[0] in keep_list)))&(it[0] not in discard_list)])
     else:
-        dicts = dict([it for it in cts.items() if (((it[1]>bottomfilter)&(it[1]<topfilter))|((('_' in it[0])&(len(re.findall('[A-Z]+',it[0]))==0))|(it[0] in keep_list)))&(it[0] not in discard_list)])
+        # dicts = dict([it for it in cts.items() if (((it[1]>bottomfilter)&(it[1]<topfilter))|((('_' in it[0])&(len(re.findall('[A-Z]+',it[0]))==0))|(it[0] in keep_list)))&(it[0] not in discard_list)])
+        # dicts = dict([it for it in cts.items() if (((it[1]>bottomfilter)&(it[1]<topfilter))|((len(re.findall('[A-Z]+',it[0]))==0)|(it[0] in keep_list)))&(it[0] not in discard_list)])
+        dicts = dict([it for it in cts.items() if ((it[1]>bottomfilter)&(it[1]<topfilter)&(it[0] not in discard_list))|(it[0] in keep_list)])
+
     vocab = set(dicts.keys())
     dictionary = [[v] for v in list(vocab)]
     gensim_dictionary = Dictionary(dictionary)
